@@ -1,136 +1,142 @@
-menu  = {
-"espresso": {
-    "ingredients": {
-        "water": 50,
-        "coffee": 18
-        },
-    "cost": 100
-},    
-"latte": {
-    "ingredients": {
-        "water": 208,
-        "milk": 150,
-        "coffee": 24
-        },
-    "cost": 200
-},
-"cappuccino": {
-    "ingredients": {
-        "water": 250,
-        "milk": 100,
-        "coffee": 24
+menu = {
+    "espresso": {
+        "ingredients": {"water": 50, "coffee": 18},
+        "cost": 100
     },
-    "cost": 250
+    "latte": {
+        "ingredients": {"water": 208, "milk": 150, "coffee": 24},
+        "cost": 200
+    },
+    "cappuccino": {
+        "ingredients": {"water": 250, "milk": 100, "coffee": 24},
+        "cost": 250
+    }
 }
-}
+
 resources = {
-    "water": 300, 
+    "water": 300,
     "milk": 200,
-    "coffee":180,
-    "money":5000
+    "coffee": 180,
+    "money": 5000
 }
+
+
+def print_menu():
+    print("\n☕ Coffee Menu (in Rs):")
+    for item, info in menu.items():
+        print(f" - {item.title():12} : Rs {info['cost']}")
+    print()
+
+
 def print_resources():
-    print(f"""Available resources:
-          water: {resources['water']}
-          milk: {resources['milk']}
-          coffee: {resources['coffee']}
-          money: {resources['money']}""")
-    
-def add_resources(water: float, milk: float, coffee: float, money: float):
+    print(f"""
+📦 Available Resources:
+  Water : {resources['water']} ml
+  Milk  : {resources['milk']} ml
+  Coffee: {resources['coffee']} g
+  Money : Rs {resources['money']}
+""")
+
+
+def add_resources():
+    try:
+        water = int(input("Enter water amount to add (ml): "))
+        milk = int(input("Enter milk amount to add (ml): "))
+        coffee = int(input("Enter coffee amount to add (g): "))
+        money = int(input("Enter money to add (Rs): "))
+    except ValueError:
+        print("❌ Invalid input! Please enter numeric values only.")
+        return
+
     resources["water"] += water
     resources["milk"] += milk
     resources["coffee"] += coffee
     resources["money"] += money
-    print("resources have been added to the coffee machine successfully.")
+    print("✅ Resources have been added successfully.")
+
+
+def make_coffee(choice):
+    drink = menu[choice]
+    ingredients = drink["ingredients"]
+
+    # Check for sufficient resources
+    for item in ingredients:
+        if resources[item] < ingredients[item]:
+            print(f"❌ Sorry, not enough {item}.")
+            return
+
+    # Ask for payment
+    try:
+        user_money = int(input("Insert money (Rs): "))
+    except ValueError:
+        print("❌ Invalid input! Please insert numeric value.")
+        return
+
+    if user_money < drink["cost"]:
+        print("❌ Sorry, not enough money was inserted.")
+        return
+
+    # Deduct ingredients
+    for item in ingredients:
+        resources[item] -= ingredients[item]
+
+    resources["money"] += drink["cost"]
+    change = user_money - drink["cost"]
+    print(f"✅ Enjoy your {choice}! ☕ Your change: Rs {change}")
+
 
 def coffee():
+    print_menu()
     while True:
-        coffee_choice = int(input("""What would you like?
-                 espresso: press 1
-                 latte: press 2
-                 cappuccino: press 3\n""")) 
-        if coffee_choice == 1:
-            if resources["water"] < menu["espresso"]["ingredients"]["water"] or resources["coffee"] < menu["espresso"]["ingredients"]["coffee"]:
-                print("sorry not enough resources")
-            else:
-                resources["water"] -= menu["espresso"]["ingredients"]["water"]
-                resources["coffee"] -= menu["espresso"]["ingredients"]["coffee"]
-                user_money = int(input("insert money: "))
-                if user_money >= menu["espresso"]["cost"]:
-                    resources["money"] += menu["espresso"]["cost"]
-                    change = user_money - menu["espresso"]["cost"]
-                    print(f"here's your change: {change}")
-                    print("Enjoy your coffee!")
-                else:
-                    print("sorry, not enough money was inserted")
-        
-        elif coffee_choice == 2:
-            if resources["water"] < menu["latte"]["ingredients"]["water"] or resources["coffee"] < menu["latte"]["ingredients"]["coffee"] or resources["milk"] < menu["latte"]["ingredients"]["milk"]:
-                print("sorry not enough resources")
-            else:
-                resources["water"] -= menu["latte"]["ingredients"]["water"]
-                resources["coffee"] -= menu["latte"]["ingredients"]["coffee"]
-                resources["milk"] -= menu["latte"]["ingredients"]["milk"]
-                user_money = int(input("insert money: "))
-                if user_money >= menu["latte"]["cost"]:
-                    resources["money"] += menu["latte"]["cost"]
-                    change = user_money - menu["latte"]["cost"]
-                    print(f"here's your change: {change}")
-                    print("Enjoy your coffee!")
-                else:
-                    print("sorry, not enough money was inserted")
-        
-        elif coffee_choice == 3:
-            if resources["water"] < menu["cappuccino"]["ingredients"]["water"] or resources["coffee"] < menu["cappuccino"]["ingredients"]["coffee"] or resources["milk"] < menu["cappuccino"]["ingredients"]["milk"]:
-                print("sorry not enough resources")
-            else:
-                resources["water"] -= menu["cappuccino"]["ingredients"]["water"]
-                resources["coffee"] -= menu["cappuccino"]["ingredients"]["coffee"]
-                resources["milk"] -= menu["cappuccino"]["ingredients"]["milk"]
-                user_money = int(input("insert money: "))
-                if user_money >= menu["cappuccino"]["cost"]:
-                    resources["money"] += menu["cappuccino"]["cost"]
-                    change = user_money - menu["cappuccino"]["cost"]
-                    print(f"here's your change: {change}")
-                    print("Enjoy your coffee!")
-                else:
-                    print("sorry, not enough money was inserted")
-        
-        else:
-            print("enter a valid choice")
+        try:
+            coffee_choice = int(input("""
+What would you like?
+  1 - Espresso
+  2 - Latte
+  3 - Cappuccino
+Choice: """))
+        except ValueError:
+            print("❌ Invalid input! Please enter 1, 2, or 3.")
             continue
-        
-        order_again = int(input("""Would you like to order again?
-                                   Yes: press 1
-                                   No: press 0\n"""))
-        if order_again == 1:
-            continue
+
+        options = {1: "espresso", 2: "latte", 3: "cappuccino"}
+
+        if coffee_choice in options:
+            make_coffee(options[coffee_choice])
         else:
+            print("❌ Invalid choice. Please try again.")
+            continue
+
+        again = input("\nWould you like to order again? (y/n): ").strip().lower()
+        if again != 'y':
             break
 
+
+# --- Main Loop ---
 while True:
-    x = int(input("""Welcome to the coffee machine, what would you like to do?
-            order coffee: press 1
-            see available resources: press 2
-            add resources to machine: press 3\n""")) # only for maintainer
+    print_menu()
+    try:
+        x = int(input("""
+Welcome to the Coffee Machine! What would you like to do?
+  1 - Order coffee
+  2 - See available resources
+  3 - Add resources (maintainer only)
+Choice: """))
+    except ValueError:
+        print("❌ Invalid input! Please enter a number (1–3).")
+        continue
+
     if x == 1:
         coffee()
     elif x == 2:
         print_resources()
     elif x == 3:
-        water_amount = int(input("enter water amount: "))
-        milk_amount = int(input("enter milk amount: "))
-        coffee_amount = int(input("enter coffee amount: "))
-        money_amount = int(input("enter money: "))
-        add_resources(water_amount, milk_amount, coffee_amount, money_amount)
+        add_resources()
     else:
-        print('enter a valid choice')
-        continue    
-    use_again = int(input("""would you like to use the machine again?
-                             Yes: press 1
-                             No: press 0\n"""))
-    if use_again == 1:
+        print("❌ Enter a valid choice (1–3).")
         continue
-    else:
+
+    again = input("\nWould you like to use the machine again? (y/n): ").strip().lower()
+    if again != 'y':
+        print("👋 Goodbye! Have a nice day!")
         break
-    
