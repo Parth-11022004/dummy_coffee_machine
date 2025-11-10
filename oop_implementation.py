@@ -5,17 +5,33 @@ class Coffee:
         self.coffee = coffee
         self.cost = cost
 
-espresso = Coffee(50,18,0,100)
-latte = Coffee(208,150,24,200)
-cappuccino = Coffee(250,100,24,250)
+
+espresso = Coffee(50, 0, 18, 100)
+latte = Coffee(208, 150, 24, 200)
+cappuccino = Coffee(250, 100, 24, 250)
 
 coffee_dict = {
-    1 : espresso,
-    2 : latte,
-    3 : cappuccino
+    1: espresso,
+    2: latte,
+    3: cappuccino
 }
 
-class Coffee_machine:
+
+# ---------- Utility Safe Input Function ----------
+def safe_int_input(prompt, valid_values=None):
+    while True:
+        try:
+            value = int(input(prompt))
+            if valid_values and value not in valid_values:
+                print("❌ Invalid choice! Try again.")
+                continue
+            return value
+        except ValueError:
+            print("❌ Please enter a valid number.")
+
+
+# ---------- Coffee Machine Class ----------
+class CoffeeMachine:
     def __init__(self):
         self.resources = {
             "water": 300,
@@ -25,89 +41,91 @@ class Coffee_machine:
         }
 
     def print_resources(self):
-        print("Available resources:")
-        print(f"Water: {self.resources['water']}ml")
-        print(f"Milk: {self.resources['milk']}ml")
-        print(f"Coffee: {self.resources['coffee']}g")
-        print(f"Money: {self.resources['money']}₹")
-    
+        print("\n📦 Available Resources:")
+        print(f"Water : {self.resources['water']} ml")
+        print(f"Milk  : {self.resources['milk']} ml")
+        print(f"Coffee: {self.resources['coffee']} g")
+        print(f"Money : ₹{self.resources['money']}\n")
+
     def add_resources(self):
-        for i in self.resources:
-            amount = int(input(f"add {i} amount: "))
-            self.resources[i] += amount
-        print("resources have been added successfully")
+        print("\n🔧 Add Resources (for maintainer):")
+        for key in ["water", "milk", "coffee"]:
+            amount = safe_int_input(f"Add {key} amount: ")
+            self.resources[key] += amount
+        print("✅ Resources have been added successfully.\n")
+
+    def show_menu(self):
+        print("\n☕ Coffee Menu:")
+        print("1. Espresso (₹100)")
+        print("2. Latte (₹200)")
+        print("3. Cappuccino (₹250)\n")
 
     def coffee_choice(self):
-        while True:
-            choice = int(input("""What would you like?
-                                Espresso: press 1
-                                Latte: press 2
-                                Cappuccino: press 3\n"""))
-            if choice not in [1,2,3]:
-                print('enter a valid choice')
-                continue
-            return choice
-    
+        self.show_menu()
+        choice = safe_int_input("Select your drink (1–3): ", [1, 2, 3])
+        return choice
+
     def check_resources_sufficient(self, coffee_type):
-            if self.resources['water'] < coffee_dict[coffee_type].water:
-                print('not enough water')
-                return False
-            elif self.resources['milk'] < coffee_dict[coffee_type].milk:
-                print('not enough milk')
-                return False
-            elif self.resources['coffee'] < coffee_dict[coffee_type].coffee:
-                print('not enough coffee')
-                return False
-            else:
-                return True
+        drink = coffee_dict[coffee_type]
+        if self.resources["water"] < drink.water:
+            print("❌ Not enough water.")
+            return False
+        if self.resources["milk"] < drink.milk:
+            print("❌ Not enough milk.")
+            return False
+        if self.resources["coffee"] < drink.coffee:
+            print("❌ Not enough coffee.")
+            return False
+        return True
 
     def enter_money(self):
-        user_money = int(input("Enter money: "))
+        user_money = safe_int_input("💰 Insert money (₹): ")
         return user_money
-        
+
     def check_money_sufficient(self, user_money, coffee_type):
-        if user_money >= coffee_dict[coffee_type].cost:
-            change = user_money - coffee_dict[coffee_type].cost
-            print(f"Here's your change: {change}, Enjoy!")
+        drink = coffee_dict[coffee_type]
+        if user_money >= drink.cost:
+            change = user_money - drink.cost
+            print(f"✅ Here's your change: ₹{change}")
+            print("☕ Enjoy your coffee!\n")
             return True
         else:
-            print("sorry, not enough money was entered")
-            return False   
-         
-    def update_resources(self, coffee_type):
-        self.resources['water'] -= coffee_dict[coffee_type].water
-        self.resources['milk'] -= coffee_dict[coffee_type].milk
-        self.resources['coffee'] -= coffee_dict[coffee_type].coffee
-        self.resources['money'] += coffee_dict[coffee_type].cost
+            print("❌ Sorry, not enough money was entered.\n")
+            return False
 
-machine1 = Coffee_machine()
+    def update_resources(self, coffee_type):
+        drink = coffee_dict[coffee_type]
+        self.resources["water"] -= drink.water
+        self.resources["milk"] -= drink.milk
+        self.resources["coffee"] -= drink.coffee
+        self.resources["money"] += drink.cost
+
+
+# ---------- Main Program ----------
+machine1 = CoffeeMachine()
 
 while True:
-    x = int(input("""Welcome to the coffee machine, what would you like to do?
-            order coffee: press 1
-            see available resources: press 2
-            add resources to machine: press 3\n""")) # only for maintainer
+    print("\n========= COFFEE MACHINE =========")
+    print("1. Order Coffee")
+    print("2. See Available Resources")
+    print("3. Add Resources (maintainer only)")
+    print("==================================")
+
+    x = safe_int_input("Enter your choice (1–3): ", [1, 2, 3])
+
     if x == 1:
-        coffee_choice = machine1.coffee_choice()
-        suff_or_not = machine1.check_resources_sufficient(coffee_choice)
-        if suff_or_not == True:
-            user_money = machine1.enter_money()
-            to_update = machine1.check_money_sufficient(user_money, coffee_choice)
-            if to_update == True:
-                machine1.update_resources(coffee_choice)
+        choice = machine1.coffee_choice()
+        if machine1.check_resources_sufficient(choice):
+            money = machine1.enter_money()
+            if machine1.check_money_sufficient(money, choice):
+                machine1.update_resources(choice)
+                print(f"✅ Dispensing your {['Espresso', 'Latte', 'Cappuccino'][choice-1]}...\n")
     elif x == 2:
         machine1.print_resources()
     elif x == 3:
         machine1.add_resources()
-    else:
-        print('enter a valid choice')
-        continue    
-    use_again = int(input("""would you like to use the machine again?
-                             Yes: press 1
-                             No: press 0\n"""))
-    if use_again == 1:
-        continue
-    else:
+
+    again = input("Would you like to use the machine again? (y/n): ").strip().lower()
+    if again != "y":
+        print("\n👋 Thank you for using the Coffee Machine. Goodbye!")
         break
-
-
